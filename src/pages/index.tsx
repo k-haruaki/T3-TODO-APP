@@ -46,7 +46,7 @@ const Home = () => {
               </button>
               <div className="mb-5 text-xl">
                 <p className="text-center text-gray-four">
-                  Keep your life in order with todolist
+                  Keep your life in order with todo list
                 </p>
                 <p className="text-center text-gray-four">
                   - The ultimate productivity tool -
