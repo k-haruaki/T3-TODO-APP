@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import type { Todo } from "~/server/types";
 import { api } from "~/utils/api";
 
@@ -26,6 +27,31 @@ export function Todo({ todo }: TodoProps) {
   });
 
   const { mutate: updateMutation } = api.todo.update.useMutation({
+    onMutate: async ({ id, text: currentTodo }) => {
+      await trpc.todo.all.cancel();
+      const previousTodos = trpc.todo.all.getData();
+      trpc.todo.all.setData(undefined, (prev) => {
+        if (!prev) return previousTodos;
+        return prev.map((t) => {
+          if (t.id === id) {
+            return {
+              ...t,
+              text: currentTodo,
+            };
+          }
+          return t;
+        });
+      });
+      setCurrentTodo(currentTodo);
+      return { previousTodos };
+    },
+    onError: (err, _, context) => {
+      toast.error("An error occured when editing todo");
+      console.log(err);
+      setCurrentTodo(text);
+      if (!context) return;
+      trpc.todo.all.setData(undefined, () => context.previousTodos);
+    },
     onSettled: async () => {
       await trpc.todo.all.invalidate();
     },
